@@ -11,7 +11,7 @@ function part1(input: string): number {
     const onlyNumbers = line.replace(/[^0-9]+/g, "");
     const firstDigit = onlyNumbers[0];
     const lastDigit = onlyNumbers[onlyNumbers.length - 1];
-    return Number(firstDigit) * 10 + Number(lastDigit);
+    return Number(firstDigit + lastDigit);
   }).reduce((a, b) => a + b, 0);
 }
 

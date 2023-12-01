@@ -38,6 +38,7 @@
     "https://deno.land/x/aocd@v1.5.0/DefaultAocdSource.ts": "f151274a587c77270b88789d3128865089e89103a928b5671eb16d756b719a5b",
     "https://deno.land/x/aocd@v1.5.0/SafeRunAocdSource.ts": "4c7cd99eda6c9bbce6c2568f91566ff9bba611dc0b011e51570524f7e58433e9",
     "https://deno.land/x/aocd@v1.5.0/_DbManager.ts": "a7d89e584a406eca75131044fb067b956bdf5419dff3ca4f98e5b92f4f77a27b",
+    "https://deno.land/x/aocd@v1.5.0/_common.ts": "2792e42a37af0060fe80c1c8f24deb2499592620fda25069d6a066162d7fe7ef",
     "https://deno.land/x/aocd@v1.5.0/configureAocd.ts": "fbfb22dda4e5081b124ed2ea571ee233873d13c561807275884c6f6e74278a27",
     "https://deno.land/x/aocd@v1.5.0/mod.ts": "a5d4b0993a24934109d60b25a08ad27ce18bb65880afcb1c3153ee71de8811b7",
     "https://deno.land/x/aocd@v1.5.0/version.ts": "14f94da33e1ea2408017bfe3464509259637a70e9f6d07a4fa31359e4effdefe",
