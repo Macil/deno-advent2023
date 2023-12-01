@@ -8,7 +8,7 @@ function parse(input: string) {
 function part1(input: string): number {
   const items = parse(input);
   return items.map((line) => {
-    const onlyNumbers = line.replace(/[^0-9]/g, "");
+    const onlyNumbers = line.replace(/[^0-9]+/g, "");
     const firstDigit = onlyNumbers[0];
     const lastDigit = onlyNumbers[onlyNumbers.length - 1];
     return Number(firstDigit) * 10 + Number(lastDigit);
