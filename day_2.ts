@@ -39,14 +39,31 @@ function part1(input: string): number {
     .reduce((sum, game) => sum + game.id, 0);
 }
 
-// function part2(input: string): number {
-//   const items = parse(input);
-//   throw new Error("TODO");
-// }
+function minimumSubset(game: Game): Subset {
+  const minimumSubset: Subset = { red: 0, green: 0, blue: 0 };
+  for (const subset of game.subsets) {
+    for (const color of ["red", "green", "blue"] as const) {
+      minimumSubset[color] = Math.max(minimumSubset[color], subset[color]);
+    }
+  }
+  return minimumSubset;
+}
+
+function power(subset: Subset): number {
+  return subset.red * subset.green * subset.blue;
+}
+
+function part2(input: string): number {
+  const games = parse(input);
+  return games
+    .map(minimumSubset)
+    .map(power)
+    .reduce((sum, power) => sum + power, 0);
+}
 
 if (import.meta.main) {
   runPart(2023, 2, 1, part1);
-  // runPart(2023, 2, 2, part2);
+  runPart(2023, 2, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -61,6 +78,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 8);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 2286);
+});
