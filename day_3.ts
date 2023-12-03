@@ -1,20 +1,35 @@
 import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
 
-interface Coordinate {
+class Coordinate {
   row: number;
   column: number;
+
+  constructor(row: number, column: number) {
+    this.row = row;
+    this.column = column;
+  }
+
+  toString() {
+    return `${this.row},${this.column}`;
+  }
+
+  static fromString(str: string): Coordinate {
+    const [row, column] = str.split(",").map(Number);
+    return new Coordinate(row, column);
+  }
 }
 
 function parse(input: string): string[] {
   return input.trimEnd().split("\n");
 }
 
-function numberHasSymbolNeighbors(
+function* getNumberSymbolNeighbors(
   lines: string[],
   numberCoordinate: Coordinate,
   numberLength: number,
-): boolean {
+  symbolRegex = /[^0-9.]/g,
+): Generator<Coordinate> {
   for (
     let row = numberCoordinate.row - 1;
     row <= numberCoordinate.row + 1;
@@ -24,15 +39,30 @@ function numberHasSymbolNeighbors(
     if (!line) {
       continue;
     }
+    const searchPartStart = Math.max(0, numberCoordinate.column - 1);
     const searchPart = line.slice(
-      Math.max(0, numberCoordinate.column - 1),
+      searchPartStart,
       numberCoordinate.column + numberLength + 1,
     );
-    if (/[^0-9.]/.test(searchPart)) {
-      return true;
+    for (const symbolMatch of searchPart.matchAll(symbolRegex)) {
+      yield new Coordinate(row, searchPartStart + symbolMatch.index!);
     }
   }
-  return false;
+}
+
+function numberHasSymbolNeighbors(
+  lines: string[],
+  numberCoordinate: Coordinate,
+  numberLength: number,
+  symbolRegex?: RegExp,
+): boolean {
+  const g = getNumberSymbolNeighbors(
+    lines,
+    numberCoordinate,
+    numberLength,
+    symbolRegex,
+  );
+  return !g.next().done;
 }
 
 function part1(input: string): number {
@@ -40,10 +70,7 @@ function part1(input: string): number {
   const partNumbers: number[] = [];
   lines.forEach((line, row) => {
     for (const numberMatch of line.matchAll(/[0-9]+/g)) {
-      const numberCoordinate: Coordinate = {
-        row,
-        column: numberMatch.index!,
-      };
+      const numberCoordinate = new Coordinate(row, numberMatch.index!);
       if (
         numberHasSymbolNeighbors(lines, numberCoordinate, numberMatch[0].length)
       ) {
@@ -54,14 +81,40 @@ function part1(input: string): number {
   return partNumbers.reduce((a, b) => a + b, 0);
 }
 
-// function part2(input: string): number {
-//   const lines = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const lines = parse(input);
+  // keys are stringified coordinates
+  const gearCoordsToNumbers = new Map<string, number[]>();
+  lines.forEach((line, row) => {
+    for (const numberMatch of line.matchAll(/[0-9]+/g)) {
+      const numberCoordinate = new Coordinate(row, numberMatch.index!);
+      for (
+        const gearCoordinate of getNumberSymbolNeighbors(
+          lines,
+          numberCoordinate,
+          numberMatch[0].length,
+          /\*/g,
+        )
+      ) {
+        const gearCoordinateString = gearCoordinate.toString();
+        let gearNumbers = gearCoordsToNumbers.get(gearCoordinateString);
+        if (!gearNumbers) {
+          gearNumbers = [];
+          gearCoordsToNumbers.set(gearCoordinateString, gearNumbers);
+        }
+        gearNumbers.push(Number(numberMatch[0]));
+      }
+    }
+  });
+  return Array.from(gearCoordsToNumbers.values())
+    .filter((gearNumbers) => gearNumbers.length === 2)
+    .map(([a, b]) => a * b)
+    .reduce((a, b) => a + b, 0);
+}
 
 if (import.meta.main) {
   runPart(2023, 3, 1, part1);
-  // runPart(2023, 3, 2, part2);
+  runPart(2023, 3, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -81,6 +134,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 4361);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 467835);
+});
