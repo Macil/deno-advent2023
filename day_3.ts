@@ -56,13 +56,18 @@ function numberHasSymbolNeighbors(
   numberLength: number,
   symbolRegex?: RegExp,
 ): boolean {
-  const g = getNumberSymbolNeighbors(
-    lines,
-    numberCoordinate,
-    numberLength,
-    symbolRegex,
-  );
-  return !g.next().done;
+  for (
+    const _value of getNumberSymbolNeighbors(
+      lines,
+      numberCoordinate,
+      numberLength,
+      symbolRegex,
+    )
+  ) {
+    // Just return true as soon as we've found one, don't need to keep looking.
+    return true;
+  }
+  return false;
 }
 
 function part1(input: string): number {
