@@ -6,19 +6,20 @@ interface Card {
   cardNumbers: number[];
 }
 
-function scoreCard(card: Card): number {
+function countWinningNumbers(card: Card): number {
   const { winningNumbers, cardNumbers } = card;
-  let score = 0;
+  let count = 0;
   for (const cardNumber of cardNumbers) {
     if (winningNumbers.includes(cardNumber)) {
-      if (score === 0) {
-        score = 1;
-      } else {
-        score *= 2;
-      }
+      count++;
     }
   }
-  return score;
+  return count;
+}
+
+function scoreCard(card: Card): number {
+  const count = countWinningNumbers(card);
+  return count === 0 ? 0 : 2 ** (count - 1);
 }
 
 function parse(input: string): Card[] {
@@ -33,17 +34,25 @@ function parse(input: string): Card[] {
 
 function part1(input: string): number {
   const cards = parse(input);
-  return cards.map(scoreCard).reduce((a, b) => a + b);
+  return cards.map(scoreCard).reduce((a, b) => a + b, 0);
 }
 
-// function part2(input: string): number {
-//   const cards = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const cards = parse(input);
+  const countPerCard = cards.map(() => 1);
+  cards.forEach((card, i) => {
+    const countOfThisCard = countPerCard[i];
+    const winningCount = countWinningNumbers(card);
+    for (let j = i + 1; j < Math.min(i + winningCount + 1, cards.length); j++) {
+      countPerCard[j] += countOfThisCard;
+    }
+  });
+  return countPerCard.reduce((a, b) => a + b, 0);
+}
 
 if (import.meta.main) {
   runPart(2023, 4, 1, part1);
-  // runPart(2023, 4, 2, part2);
+  runPart(2023, 4, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -59,6 +68,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 13);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 30);
+});
