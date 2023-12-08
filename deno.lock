@@ -1,5 +1,22 @@
 {
   "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:mnemonist@0.39.6": "npm:mnemonist@0.39.6"
+    },
+    "npm": {
+      "mnemonist@0.39.6": {
+        "integrity": "sha512-A/0v5Z59y63US00cRSLiloEIw3t5G+MiKz4BhX21FI+YBJXBOGW0ohFxTxO08dsOYlzxo87T7vGfZKYp2bcAWA==",
+        "dependencies": {
+          "obliterator": "obliterator@2.0.4"
+        }
+      },
+      "obliterator@2.0.4": {
+        "integrity": "sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==",
+        "dependencies": {}
+      }
+    }
+  },
   "remote": {
     "https://deno.land/std@0.208.0/assert/_constants.ts": "8a9da298c26750b28b326b297316cdde860bc237533b07e1337c021379e6b2a9",
     "https://deno.land/std@0.208.0/assert/_diff.ts": "58e1461cc61d8eb1eacbf2a010932bf6a05b79344b02ca38095f9b805795dc48",
