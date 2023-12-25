@@ -30,14 +30,23 @@ function part1(input: string): number {
   return data.map(countWaysToWin).reduce((a, b) => a * b, 1);
 }
 
-// function part2(input: string): number {
-//   const data = parse(input);
-//   throw new Error("TODO");
-// }
+function parsePart2(input: string): Race {
+  const lines = input.trimEnd().split("\n");
+  assertEquals(lines.length, 2);
+  const [time, distance] = lines.map((line) =>
+    Number(line.split(":")[1].replaceAll(/\s+/g, ""))
+  );
+  return { time, distance };
+}
+
+function part2(input: string): number {
+  const race = parsePart2(input);
+  return countWaysToWin(race);
+}
 
 if (import.meta.main) {
   runPart(2023, 6, 1, part1);
-  // runPart(2023, 6, 2, part2);
+  runPart(2023, 6, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -49,6 +58,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 288);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 71503);
+});
