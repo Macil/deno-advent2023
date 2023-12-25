@@ -44,6 +44,39 @@ Deno.test("compareCards", () => {
 
   assertEquals(compareCards("7", "2"), -1);
   assertEquals(compareCards("3", "5"), 1);
+
+  assertEquals(compareCards("J", "A"), 1);
+  assertEquals(compareCards("J", "T"), -1);
+  assertEquals(compareCards("J", "9"), -1);
+  assertEquals(compareCards("J", "2"), -1);
+});
+
+/**
+ * @returns 0 if they're equal, -1 if `a` is stronger, 1 if `b` is stronger
+ */
+function compareCardsPart2(a: Card, b: Card): number {
+  const aScore = a === "J" ? 1 : CARD_SCORES[a];
+  const bScore = b === "J" ? 1 : CARD_SCORES[b];
+  return Math.sign(bScore - aScore);
+}
+
+Deno.test("compareCardsPart2", () => {
+  assertEquals(compareCardsPart2("A", "A"), 0);
+  assertEquals(compareCardsPart2("5", "5"), 0);
+
+  assertEquals(compareCardsPart2("A", "K"), -1);
+  assertEquals(compareCardsPart2("Q", "K"), 1);
+
+  assertEquals(compareCardsPart2("Q", "9"), -1);
+  assertEquals(compareCardsPart2("7", "K"), 1);
+
+  assertEquals(compareCardsPart2("7", "2"), -1);
+  assertEquals(compareCardsPart2("3", "5"), 1);
+
+  assertEquals(compareCardsPart2("J", "A"), 1);
+  assertEquals(compareCardsPart2("J", "T"), 1);
+  assertEquals(compareCardsPart2("J", "9"), 1);
+  assertEquals(compareCardsPart2("J", "2"), 1);
 });
 
 const HAND_TYPE_SCORES = {
@@ -66,9 +99,7 @@ function countCardsOfEachType(cards: Card[]): Partial<Record<Card, number>> {
   return counts;
 }
 
-function identifyType(cards: Card[]): HandType {
-  const counts = Object.values(countCardsOfEachType(cards))
-    .sort((a, b) => b - a);
+function identifyTypeUsingCountsList(counts: number[]): HandType {
   if (counts[0] === 5) {
     return "fiveOfAKind";
   }
@@ -90,6 +121,12 @@ function identifyType(cards: Card[]): HandType {
   return "highCard";
 }
 
+function identifyType(cards: Card[]): HandType {
+  const counts = Object.values(countCardsOfEachType(cards))
+    .sort((a, b) => b - a);
+  return identifyTypeUsingCountsList(counts);
+}
+
 Deno.test("identifyType", () => {
   assertEquals(identifyType(parseCards("AAAAA")), "fiveOfAKind");
   assertEquals(identifyType(parseCards("AA8AA")), "fourOfAKind");
@@ -98,6 +135,35 @@ Deno.test("identifyType", () => {
   assertEquals(identifyType(parseCards("23432")), "twoPair");
   assertEquals(identifyType(parseCards("A23A4")), "onePair");
   assertEquals(identifyType(parseCards("23456")), "highCard");
+
+  assertEquals(identifyType(parseCards("QJJQ2")), "twoPair");
+  assertEquals(identifyType(parseCards("J3456")), "highCard");
+  assertEquals(identifyType(parseCards("A23AJ")), "onePair");
+  assertEquals(identifyType(parseCards("TTT9J")), "threeOfAKind");
+  assertEquals(identifyType(parseCards("AAJAA")), "fourOfAKind");
+});
+
+function identifyTypePart2(cards: Card[]): HandType {
+  const countsByType = countCardsOfEachType(cards);
+  const jCount = countsByType["J"] ?? 0;
+  delete countsByType["J"];
+  const counts = Object.values(countsByType)
+    .sort((a, b) => b - a);
+  if (counts.length === 0) {
+    counts.push(jCount);
+  } else {
+    counts[0] += jCount;
+  }
+  return identifyTypeUsingCountsList(counts);
+}
+
+Deno.test("identifyTypePart2", () => {
+  assertEquals(identifyTypePart2(parseCards("QJJQ2")), "fourOfAKind");
+  assertEquals(identifyTypePart2(parseCards("J3456")), "onePair");
+  assertEquals(identifyTypePart2(parseCards("A23AJ")), "threeOfAKind");
+  assertEquals(identifyTypePart2(parseCards("TTT9J")), "fourOfAKind");
+  assertEquals(identifyTypePart2(parseCards("AAJAA")), "fiveOfAKind");
+  assertEquals(identifyTypePart2(parseCards("JJJJJ")), "fiveOfAKind");
 });
 
 /**
@@ -127,6 +193,35 @@ Deno.test("compareHands", () => {
   assertEquals(compareHands(parseCards("77888"), parseCards("77788")), -1);
 });
 
+/**
+ * @returns 0 if they're equal, -1 if `a` is stronger, 1 if `b` is stronger
+ */
+function compareHandsPart2(a: Card[], b: Card[]): number {
+  const aTypeScore = HAND_TYPE_SCORES[identifyTypePart2(a)];
+  const bTypeScore = HAND_TYPE_SCORES[identifyTypePart2(b)];
+  if (aTypeScore !== bTypeScore) {
+    return Math.sign(bTypeScore - aTypeScore);
+  }
+  for (const [aCard, bCard] of zip(a, b)) {
+    const comparison = compareCardsPart2(aCard, bCard);
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+  return 0;
+}
+
+Deno.test("compareHandsPart2", () => {
+  assertEquals(compareHandsPart2(parseCards("AAAAA"), parseCards("AAAAA")), 0);
+  assertEquals(compareHandsPart2(parseCards("AAAAA"), parseCards("AA8AA")), -1);
+  assertEquals(compareHandsPart2(parseCards("23456"), parseCards("AA8AA")), 1);
+
+  assertEquals(compareHandsPart2(parseCards("33332"), parseCards("2AAAA")), -1);
+  assertEquals(compareHandsPart2(parseCards("77888"), parseCards("77788")), -1);
+
+  assertEquals(compareHandsPart2(parseCards("JKKK2"), parseCards("QQQQ2")), 1);
+});
+
 function parseCards(cards: string): Card[] {
   return Array.from(cards) as Card[];
 }
@@ -147,14 +242,18 @@ function part1(input: string): number {
   return handWinnings.reduce((a, b) => a + b, 0);
 }
 
-// function part2(input: string): number {
-//   const inputHands = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const inputHands = parse(input);
+  const sortedHands = inputHands.toSorted((a, b) =>
+    -compareHandsPart2(a.cards, b.cards)
+  );
+  const handWinnings = sortedHands.map((hand, index) => (index + 1) * hand.bid);
+  return handWinnings.reduce((a, b) => a + b, 0);
+}
 
 if (import.meta.main) {
   runPart(2023, 7, 1, part1);
-  // runPart(2023, 7, 2, part2);
+  runPart(2023, 7, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -169,6 +268,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 6440);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 5905);
+});
