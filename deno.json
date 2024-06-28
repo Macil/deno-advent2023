@@ -1,5 +1,9 @@
 {
   "tasks": {
     "test": "deno run --allow-read=. --allow-run https://deno.land/x/aocd@v1.5.1/eachDayTestRunner.ts"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^0.226.0",
+    "@std/collections": "jsr:@std/collections@^1.0.1"
   }
 }

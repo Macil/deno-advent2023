@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
 import { StaticIntervalTree } from "npm:mnemonist@0.39.6";
 import { chunk } from "https://deno.land/std@0.208.0/collections/chunk.ts";

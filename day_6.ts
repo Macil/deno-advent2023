@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.210.0/assert/mod.ts";
-import { zip } from "https://deno.land/std@0.210.0/collections/zip.ts";
+import { assertEquals } from "@std/assert";
+import { zip } from "@std/collections/zip";
 import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
 
 interface Race {
