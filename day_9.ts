@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
+import { runPart } from "@macil/aocd";
 
 function parse(input: string): Array<Array<number>> {
   return input.trimEnd().split("\n").map((line) =>

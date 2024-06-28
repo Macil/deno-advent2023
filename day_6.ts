@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { zip } from "@std/collections/zip";
-import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
+import { runPart } from "@macil/aocd";
 
 interface Race {
   time: number;
