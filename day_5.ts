@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
 import { StaticIntervalTree } from "npm:mnemonist@0.39.6";
-import { chunk } from "https://deno.land/std@0.208.0/collections/chunk.ts";
+import { chunk } from "@std/collections/chunk";
 
 interface InputData {
   seeds: number[];
