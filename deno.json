@@ -1,9 +1,9 @@
 {
   "tasks": {
-    "test": "deno run --allow-read=. --allow-run jsr:@macil/aocd@1.5.2-alpha.1/eachDayTestRunner"
+    "test": "deno run --allow-read=. --allow-run jsr:@macil/aocd@1.6.0/eachDayTestRunner"
   },
   "imports": {
-    "@macil/aocd": "jsr:@macil/aocd@^1.5.2-alpha.1",
+    "@macil/aocd": "jsr:@macil/aocd@^1.6.0",
     "@std/assert": "jsr:@std/assert@^0.226.0",
     "@std/collections": "jsr:@std/collections@^1.0.1"
   }
