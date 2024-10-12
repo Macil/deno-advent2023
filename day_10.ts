@@ -97,29 +97,27 @@ class World {
       yield neighbor;
     }
   }
-  countLoopLengthFrom(coordinate: Coordinate): number {
+  *getNodesInLoop(startCoordinate: Coordinate): Generator<Coordinate> {
     let prevNode: Coordinate | undefined;
-    let currentNode = coordinate;
-    let steps = 0;
+    let currentNode = startCoordinate;
     outer: do {
+      yield currentNode;
       for (const neighbor of this.getNeighbors(currentNode)) {
         if (prevNode && areCoordinatesEqual(neighbor, prevNode)) {
           continue;
         }
         prevNode = currentNode;
         currentNode = neighbor;
-        steps++;
         continue outer;
       }
       throw new Error("No unvisited neighbors.");
-    } while (!areCoordinatesEqual(currentNode, coordinate));
-    return steps;
+    } while (!areCoordinatesEqual(currentNode, startCoordinate));
   }
 }
 
 function part1(input: string): number {
   const world = new World(input);
-  return world.countLoopLengthFrom(world.startCoordinate) / 2;
+  return Array.from(world.getNodesInLoop(world.startCoordinate)).length / 2;
 }
 
 // function part2(input: string): number {
