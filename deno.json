@@ -1,6 +1,12 @@
 {
-  "tasks": {
-    "test": "deno run --allow-read=. --allow-run jsr:@macil/aocd@2.0.0/eachDayTestRunner"
+  "test": {
+    "include": [
+      "day_*.ts",
+      "**/*.test.ts",
+      "**/*_.test.ts",
+      "**/test.ts",
+      "**/__tests__/**"
+    ]
   },
   "imports": {
     "@babia/tiny-math": "jsr:@babia/tiny-math@0.1.5",
