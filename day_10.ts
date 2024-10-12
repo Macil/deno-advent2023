@@ -113,13 +113,13 @@ class World {
       }
       throw new Error("No unvisited neighbors.");
     } while (!areCoordinatesEqual(currentNode, coordinate));
-    return steps / 2;
+    return steps;
   }
 }
 
 function part1(input: string): number {
   const world = new World(input);
-  return world.countLoopLengthFrom(world.startCoordinate);
+  return world.countLoopLengthFrom(world.startCoordinate) / 2;
 }
 
 // function part2(input: string): number {
