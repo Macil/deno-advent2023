@@ -1,13 +1,26 @@
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
 
-interface Coordinate {
+class Coordinate {
   x: number;
   y: number;
-}
-
-function areCoordinatesEqual(a: Coordinate, b: Coordinate): boolean {
-  return a.x === b.x && a.y === b.y;
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+  static fromString(string: string): Coordinate {
+    const [x, y] = string.split(",").map(Number);
+    return new Coordinate(x, y);
+  }
+  equals(other: Coordinate): boolean {
+    return this.x === other.x && this.y === other.y;
+  }
+  toString(): string {
+    return `${this.x},${this.y}`;
+  }
+  clone(): Coordinate {
+    return new Coordinate(this.x, this.y);
+  }
 }
 
 type Direction = "N" | "S" | "W" | "E";
@@ -31,13 +44,13 @@ function step(
 ): Coordinate {
   switch (direction) {
     case "N":
-      return { x: coordinate.x, y: coordinate.y - 1 };
+      return new Coordinate(coordinate.x, coordinate.y - 1);
     case "S":
-      return { x: coordinate.x, y: coordinate.y + 1 };
+      return new Coordinate(coordinate.x, coordinate.y + 1);
     case "W":
-      return { x: coordinate.x - 1, y: coordinate.y };
+      return new Coordinate(coordinate.x - 1, coordinate.y);
     case "E":
-      return { x: coordinate.x + 1, y: coordinate.y };
+      return new Coordinate(coordinate.x + 1, coordinate.y);
   }
 }
 
@@ -59,9 +72,9 @@ class World {
     this.#lines = input.trimEnd().split("\n");
     this.startCoordinate = (() => {
       for (let i = 0; i < this.#lines.length; i++) {
-        const startCoordinate = this.#lines[i].indexOf("S");
-        if (startCoordinate !== -1) {
-          return { x: startCoordinate, y: i };
+        const startX = this.#lines[i].indexOf("S");
+        if (startX !== -1) {
+          return new Coordinate(startX, i);
         }
       }
       throw new Error("Could not find start coordinate.");
@@ -103,7 +116,7 @@ class World {
     outer: do {
       yield currentNode;
       for (const neighbor of this.getNeighbors(currentNode)) {
-        if (prevNode && areCoordinatesEqual(neighbor, prevNode)) {
+        if (prevNode && neighbor.equals(prevNode)) {
           continue;
         }
         prevNode = currentNode;
@@ -111,7 +124,7 @@ class World {
         continue outer;
       }
       throw new Error("No unvisited neighbors.");
-    } while (!areCoordinatesEqual(currentNode, startCoordinate));
+    } while (!currentNode.equals(startCoordinate));
   }
 }
 
