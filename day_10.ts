@@ -62,7 +62,6 @@ const CONNECTIONS_FROM_TILE: Record<string, ReadonlyArray<Direction>> = {
   7: ["S", "W"],
   F: ["S", "E"],
   ".": [],
-  S: ["N", "S", "W", "E"],
 };
 
 class World {
@@ -79,6 +78,38 @@ class World {
       }
       throw new Error("Could not find start coordinate.");
     })();
+    // Replace S tile with correct tile
+    {
+      const startNodeConnections: Direction[] = [];
+      const ALL_DIRECTIONS: ReadonlyArray<Direction> = ["N", "S", "W", "E"];
+      for (const direction of ALL_DIRECTIONS) {
+        const neighbor = step(this.startCoordinate, direction);
+        const neighborTile = this.tileAt(neighbor);
+        if (!neighborTile) {
+          continue;
+        }
+        const neighborConnections = CONNECTIONS_FROM_TILE[neighborTile];
+        if (!neighborConnections) {
+          continue;
+        }
+        if (
+          !neighborConnections.includes(oppositeDirection(direction))
+        ) {
+          continue;
+        }
+        startNodeConnections.push(direction);
+      }
+      const startNodeConnectionsString = startNodeConnections.sort().join("");
+      const effectiveStartTile = Object.entries(CONNECTIONS_FROM_TILE).find(
+        ([_tile, connections]) =>
+          connections.length === startNodeConnections.length &&
+          startNodeConnectionsString === connections.toSorted().join(""),
+      )![0];
+      this.#lines[this.startCoordinate.y] =
+        this.#lines[this.startCoordinate.y].slice(0, this.startCoordinate.x) +
+        effectiveStartTile +
+        this.#lines[this.startCoordinate.y].slice(this.startCoordinate.x + 1);
+    }
   }
   tileAt(coordinate: Coordinate): string | undefined {
     return this.#lines[coordinate.y]?.[coordinate.x];
@@ -93,21 +124,7 @@ class World {
       return;
     }
     for (const connection of connections) {
-      const neighbor = step(coordinate, connection);
-      if (tile === "S") {
-        const neighborTile = this.tileAt(neighbor);
-        if (!neighborTile) {
-          continue;
-        }
-        const neighborConnections = CONNECTIONS_FROM_TILE[neighborTile];
-        if (!neighborConnections) {
-          continue;
-        }
-        if (!neighborConnections.includes(oppositeDirection(connection))) {
-          continue;
-        }
-      }
-      yield neighbor;
+      yield step(coordinate, connection);
     }
   }
   *getNodesInLoop(startCoordinate: Coordinate): Generator<Coordinate> {
@@ -133,14 +150,62 @@ function part1(input: string): number {
   return Array.from(world.getNodesInLoop(world.startCoordinate)).length / 2;
 }
 
-// function part2(input: string): number {
-//   const world = new World(input);
-//   throw new Error("TODO");
-// }
+// consider our position to be the bottom right corner of the tile, and that
+// we've just moved from the tile to the left.
+const INSIDE_CHANGERS = ["|", "7", "F"];
+
+function part2(input: string): number {
+  const world = new World(input);
+
+  const nwMostCoordinate = world.startCoordinate.clone();
+  const seMostCoordinate = world.startCoordinate.clone();
+
+  const loopNodes = new Set<string>();
+
+  for (const node of world.getNodesInLoop(world.startCoordinate)) {
+    if (nwMostCoordinate.x > node.x) {
+      nwMostCoordinate.x = node.x;
+    }
+    if (nwMostCoordinate.y > node.y) {
+      nwMostCoordinate.y = node.y;
+    }
+    if (seMostCoordinate.x < node.x) {
+      seMostCoordinate.x = node.x;
+    }
+    if (seMostCoordinate.y < node.y) {
+      seMostCoordinate.y = node.y;
+    }
+    loopNodes.add(node.toString());
+  }
+
+  let enclosedTiles = 0;
+  const coordinate = nwMostCoordinate.clone();
+  for (; coordinate.y <= seMostCoordinate.y; coordinate.y++) {
+    let inside = false;
+    for (
+      coordinate.x = nwMostCoordinate.x;
+      coordinate.x <= seMostCoordinate.x;
+      coordinate.x++
+    ) {
+      const tile = world.tileAt(coordinate)!;
+      if (loopNodes.has(coordinate.toString())) {
+        if (INSIDE_CHANGERS.includes(tile)) {
+          inside = !inside;
+        }
+      } else if (inside) {
+        enclosedTiles++;
+      }
+    }
+    if (inside) {
+      throw new Error("inside should be false at the end of each row.");
+    }
+  }
+  return enclosedTiles;
+}
 
 if (import.meta.main) {
   runPart(2023, 10, 1, part1);
-  // runPart(2023, 10, 2, part2);
+  runPart(2023, 10, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -155,6 +220,50 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 8);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 1);
+  assertEquals(
+    part2(`\
+...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........
+`),
+    4,
+  );
+  assertEquals(
+    part2(`\
+.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...
+`),
+    8,
+  );
+  assertEquals(
+    part2(`\
+FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L
+`),
+    10,
+  );
+});
