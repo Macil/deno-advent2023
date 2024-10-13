@@ -1,10 +1,10 @@
 {
   "test": {
     "include": [
-      "day_*.ts",
-      "**/*.test.ts",
-      "**/*_.test.ts",
-      "**/test.ts",
+      "day_*.*",
+      "**/*.test.*",
+      "**/*_.test.*",
+      "**/test.*",
       "**/__tests__/**"
     ]
   },
