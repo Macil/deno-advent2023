@@ -1,27 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
-
-class Coordinate {
-  x: number;
-  y: number;
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-  static fromString(string: string): Coordinate {
-    const [x, y] = string.split(",").map(Number);
-    return new Coordinate(x, y);
-  }
-  equals(other: Coordinate): boolean {
-    return this.x === other.x && this.y === other.y;
-  }
-  toString(): string {
-    return `${this.x},${this.y}`;
-  }
-  clone(): Coordinate {
-    return new Coordinate(this.x, this.y);
-  }
-}
+import { Coordinate } from "./lib/Coordinate.ts";
 
 type Direction = "N" | "S" | "W" | "E";
 
