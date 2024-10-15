@@ -19,12 +19,27 @@ function parse(input: string): Row[] {
   });
 }
 
-function countCombinations(row: Row): number {
+function trimStatuses(statuses: string): string {
+  return statuses.replace(/^[^#?]*/, "");
+}
+
+function countCombinations(
+  row: Row,
+  cachedResults = new Map<string, number>(),
+): number {
   if (row.brokenSpringGroupLengths.length === 0) {
     return row.statuses.includes("#") ? 0 : 1;
   }
   if (row.statuses.length === 0) {
     return 0;
+  }
+
+  const cacheKey = `${
+    trimStatuses(row.statuses)
+  }:${row.brokenSpringGroupLengths.length}`;
+  const cachedResult = cachedResults.get(cacheKey);
+  if (cachedResult !== undefined) {
+    return cachedResult;
   }
 
   const nextBrokenSpringGroupLength = row.brokenSpringGroupLengths[0];
@@ -74,8 +89,10 @@ function countCombinations(row: Row): number {
         maybeBrokenMatch.index + nextBrokenSpringGroupLength + 1,
       ),
       brokenSpringGroupLengths: brokenSpringGroupLengthsTail,
-    });
+    }, cachedResults);
   }
+
+  cachedResults.set(cacheKey, combinations);
 
   return combinations;
 }
@@ -83,7 +100,7 @@ function countCombinations(row: Row): number {
 function part1(input: string): number {
   const rows = parse(input);
   return rows
-    .map(countCombinations)
+    .map((row) => countCombinations(row))
     .reduce((a, b) => a + b, 0);
 }
 
@@ -102,13 +119,13 @@ function part2(input: string): number {
   const rows = parse(input);
   return rows
     .map(part2RowTransform)
-    .map(countCombinations)
+    .map((row) => countCombinations(row))
     .reduce((a, b) => a + b, 0);
 }
 
 if (import.meta.main) {
   runPart(2023, 12, 1, part1);
-  // runPart(2023, 12, 2, part2);
+  runPart(2023, 12, 2, part2);
 }
 
 const TEST_INPUT = `\
