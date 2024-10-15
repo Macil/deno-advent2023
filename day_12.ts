@@ -26,37 +26,58 @@ function countCombinations(row: Row): number {
   if (row.statuses.length === 0) {
     return 0;
   }
-  function combinationsIfGroupStartsHere(): number {
-    const m = /^[#?]+/.exec(row.statuses);
-    if (!m || m[0].length < row.brokenSpringGroupLengths[0]) {
-      // can't start a group here
-      return 0;
+
+  const nextBrokenSpringGroupLength = row.brokenSpringGroupLengths[0];
+  const brokenSpringGroupLengthsTail = row.brokenSpringGroupLengths.slice(1);
+
+  let combinations = 0;
+
+  // find locations that could start a group and sum the combinations from each
+
+  const minimumStatusesToFillExpectedBrokenGroupLengths =
+    row.brokenSpringGroupLengths.reduce((a, b) => a + b + 1, 0) - 1;
+
+  let lastIndexToConsiderForStart = row.statuses.length -
+    minimumStatusesToFillExpectedBrokenGroupLengths;
+
+  const firstKnownBrokenIndex = row.statuses.indexOf("#");
+  if (firstKnownBrokenIndex !== -1) {
+    lastIndexToConsiderForStart = Math.min(
+      lastIndexToConsiderForStart,
+      firstKnownBrokenIndex,
+    );
+  }
+
+  for (
+    const maybeBrokenMatch of row.statuses
+      .slice(0, lastIndexToConsiderForStart + 1)
+      .matchAll(/[#?]/g)
+  ) {
+    const immediateBrokenMatch = /^[#?]+/.exec(
+      row.statuses.slice(maybeBrokenMatch.index),
+    );
+    if (
+      !immediateBrokenMatch ||
+      immediateBrokenMatch[0].length < nextBrokenSpringGroupLength
+    ) {
+      // can't fit the current group here
+      continue;
     }
     // check there's no known broken spring at the boundary
-    if (row.statuses[row.brokenSpringGroupLengths[0]] === "#") {
-      return 0;
+    if (
+      row.statuses[maybeBrokenMatch.index + nextBrokenSpringGroupLength] === "#"
+    ) {
+      continue;
     }
-    return countCombinations({
-      statuses: row.statuses.slice(row.brokenSpringGroupLengths[0] + 1),
-      brokenSpringGroupLengths: row.brokenSpringGroupLengths.slice(1),
+    combinations += countCombinations({
+      statuses: row.statuses.slice(
+        maybeBrokenMatch.index + nextBrokenSpringGroupLength + 1,
+      ),
+      brokenSpringGroupLengths: brokenSpringGroupLengthsTail,
     });
   }
-  function combinationsIfGroupStartsLater(): number {
-    if (row.statuses[0] === "#") {
-      // can't start later
-      return 0;
-    }
-    const m = /[#?]/.exec(row.statuses.slice(1));
-    if (!m) {
-      // no more groups
-      return 0;
-    }
-    return countCombinations({
-      statuses: row.statuses.slice(m.index + 1),
-      brokenSpringGroupLengths: row.brokenSpringGroupLengths,
-    });
-  }
-  return combinationsIfGroupStartsHere() + combinationsIfGroupStartsLater();
+
+  return combinations;
 }
 
 function part1(input: string): number {
@@ -66,10 +87,24 @@ function part1(input: string): number {
     .reduce((a, b) => a + b, 0);
 }
 
-// function part2(input: string): number {
-//   const rows = parse(input);
-//   throw new Error("TODO");
-// }
+function part2RowTransform(row: Row): Row {
+  return {
+    statuses: new Array(5)
+      .fill(row.statuses)
+      .join("?"),
+    brokenSpringGroupLengths: new Array(5)
+      .fill(row.brokenSpringGroupLengths)
+      .flat(),
+  };
+}
+
+function part2(input: string): number {
+  const rows = parse(input);
+  return rows
+    .map(part2RowTransform)
+    .map(countCombinations)
+    .reduce((a, b) => a + b, 0);
+}
 
 if (import.meta.main) {
   runPart(2023, 12, 1, part1);
@@ -101,7 +136,7 @@ Deno.test("example line 3", () => {
   assertEquals(part1("?#?#?#?#?#?#?#? 1,3,1,6"), 1);
 });
 
-Deno.test("example line 5", () => {
+Deno.test("example line 6", () => {
   assertEquals(part1("?###???????? 3,2,1"), 10);
 });
 
@@ -109,6 +144,16 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 21);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2 per line", async (t) => {
+  const lines = TEST_INPUT.trimEnd().split("\n");
+  const answers = [1, 16384, 1, 16, 2500, 506250];
+  for (let i = 0; i < answers.length; i++) {
+    await t.step(`${i + 1}`, () => {
+      assertEquals(part2(lines[i]), answers[i]);
+    });
+  }
+});
+
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 525152);
+});
