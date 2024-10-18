@@ -106,8 +106,8 @@ class World {
       }
     }
   }
-  run() {
-    const beams: Array<[Coordinate, Direction]> = [[new Coordinate(0, 0), "R"]];
+  run(beams: Array<[Coordinate, Direction]>) {
+    beams = beams.slice();
     while (beams.length > 0) {
       const [coordinate, direction] = beams.pop()!;
       const state = this.state.get(coordinate);
@@ -149,19 +149,46 @@ class World {
 }
 
 function part1(input: string): number {
-  const world = new World(input.trimEnd().split("\n"));
-  world.run();
+  const geometry = input.trimEnd().split("\n");
+  const world = new World(geometry);
+  world.run([[new Coordinate(0, 0), "R"]]);
   return world.countEnergizedCells();
 }
 
-// function part2(input: string): number {
-//   const items = parse(input);
-//   throw new Error("TODO");
-// }
+function getAllStartingBeams(
+  geometry: string[],
+): Array<[Coordinate, Direction]> {
+  const result: Array<[Coordinate, Direction]> = [];
+  for (let y = 0; y < geometry.length; y++) {
+    result.push(
+      [new Coordinate(0, y), "R"],
+      [new Coordinate(geometry[y].length - 1, y), "L"],
+    );
+  }
+  for (let x = 0; x < geometry[0].length; x++) {
+    result.push(
+      [new Coordinate(x, 0), "D"],
+      [new Coordinate(x, geometry.length - 1), "U"],
+    );
+  }
+  return result;
+}
+
+function part2(input: string): number {
+  const geometry = input.trimEnd().split("\n");
+  return Math.max(
+    ...getAllStartingBeams(geometry)
+      .map(([coordinate, direction]) => {
+        const world = new World(geometry);
+        world.run([[coordinate, direction]]);
+        return world.countEnergizedCells();
+      }),
+  );
+}
 
 if (import.meta.main) {
   runPart(2023, 16, 1, part1);
-  // runPart(2023, 16, 2, part2);
+  runPart(2023, 16, 2, part2);
 }
 
 const TEST_INPUT = String.raw`
@@ -181,6 +208,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 46);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 51);
+});
