@@ -13,6 +13,9 @@ export class Coordinate {
     const [x, y] = parts.map(Number);
     return new Coordinate(x, y);
   }
+  add(other: Coordinate): Coordinate {
+    return new Coordinate(this.x + other.x, this.y + other.y);
+  }
   equals(other: Coordinate): boolean {
     return this.x === other.x && this.y === other.y;
   }
