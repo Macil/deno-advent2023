@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
-import { StaticIntervalTree } from "npm:mnemonist@0.39.6";
+import { StaticIntervalTree } from "mnemonist";
 import { chunk } from "@std/collections/chunk";
 
 interface InputData {
